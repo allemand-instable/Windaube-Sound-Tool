@@ -1,3 +1,4 @@
+from typing import Union
 import pycaw.pycaw as pycaw
 import operator
 import subprocess
@@ -25,10 +26,21 @@ def get_devices() :
     playback_devices = [device for device in devices if "0.0.0.00000000" in device.id.split("{")[1]]
     playback_devices.sort(key=operator.attrgetter('FriendlyName'))
     
+    
+    by_name_dict = {"[p]  " + device.FriendlyName : [] for device in playback_devices  }
+    by_name_dict.update( {"[r]  " + device.FriendlyName : [] for device in recording_devices  } )
+    
+    for device in playback_devices:
+        by_name_dict["[p]  " + device.FriendlyName].append( device )
+    for device in recording_devices :
+        by_name_dict["[r]  " + device.FriendlyName].append( device )
+    
+    
     dict = {
         'playback' : playback_devices,
         'recording' : recording_devices,
-        'pointer' : device_pointer_dict
+        'pointer' : device_pointer_dict,
+        "by_name" : by_name_dict
     }
     
     return dict
@@ -66,9 +78,12 @@ def set_playback_through(enable : bool, record_device = None, playback_device = 
     if enable is True :
         soundvolumeview("SetListenToThisDevice", record_device, "1", soundvolumeview_path )
         soundvolumeview("SetPlaybackThroughDevice", record_device, playback_device.id, soundvolumeview_path)
+        input()
     else :
         soundvolumeview("SetListenToThisDevice", record_device, "0", soundvolumeview_path)
         
+
+
 
 class SoundDeviceManager():
     
@@ -81,6 +96,7 @@ class SoundDeviceManager():
     #   playback
     #   recording
     #   pointer
+    #   by_name
     
     def __init__(self) -> None:
         pass
@@ -96,18 +112,106 @@ class SoundDeviceManager():
         cls.devices = get_devices()
         
     @classmethod
-    def enable(cls, device):
-        enable_device(device, cls.SoundVolumeView_path)
+    def enable(cls, device : Union[pycaw.AudioDevice, list]):
+        if type( device ) == list :
+            for d in device :
+                cls.enable(d)
+        else :
+            enable_device(device, cls.SoundVolumeView_path)
+            print(f"> {device.id} | {device.FriendlyName} enabled")
     
     @classmethod
-    def disable(cls, device):
-        disable_device(device, cls.SoundVolumeView_path)
+    def disable(cls, device : Union[pycaw.AudioDevice, list]):
+        if type( device ) == list :
+            for d in device :
+                cls.disable(d)
+        else :
+            disable_device(device, cls.SoundVolumeView_path)
+            print(f"> {device.id} | {device.FriendlyName} disabled")
     
     @classmethod
-    def restart(cls, device):
-        restart_device(device, cls.SoundVolumeView_path)
+    def restart(cls, device : Union[pycaw.AudioDevice, list]):
+        if type( device ) == list :
+            for d in device :
+                cls.restart(d)
+        else :
+            restart_device(device, cls.SoundVolumeView_path)
+            print(f"> {device.id} | {device.FriendlyName} restarted")
     
     @classmethod
     def set_playback_through(cls, enable, record_device, playback_device):
-        set_playback_through(enable, record_device, playback_device, cls.SoundVolumeView_path)
+        if type( record_device ) == list :
+            for d in record_device :
+                cls.set_playback_through(enable, d, playback_device)
+        else :
+            set_playback_through(enable, record_device, playback_device, cls.SoundVolumeView_path)
+            print(f"{record_device.id} | {record_device.FriendlyName} will playback through {playback_device.FriendlyName}")
+    
+    @classmethod
+    def list_devices(cls, key):
+        available_keys = ["playback", "recording", "pointer"]
+        if key not in available_keys :
+            raise Exception(f"la clé doit être une des suivantes : {elem for elem in available_keys}")
+        return [elem.FriendlyName for elem in cls.devices[key]]
+
+    @staticmethod
+    def is_active(device):
+        # https://docs.microsoft.com/en-us/windows/win32/coreaudio/device-state-xxx-constants
+        if device.state.value in [1,4, 8] :
+            # if device.state.value == 8 :
+            #     print(f"{device.FriendlyName} : Warning ! device is unplugged.")
+            # elif device.state.value == 4 :
+            #     print(f"{device.FriendlyName} : The audio endpoint device is not present")
+            return True
+        
+        if device.state.value == 2 :
+            return False
+        else :
+            raise Exception(f"unkown state value : {device.state.value}")
+
+# D = get_devices()
+# pprint( SoundDeviceManager.list_devices("recording") )
+# pprint( SoundDeviceManager.list_devices("playback") )
+
+
+# a = SoundDeviceManager.devices["playback"][0]
+# b = SoundDeviceManager.devices["playback"][1]
+# c = SoundDeviceManager.devices["playback"][3]
+# d= SoundDeviceManager.devices["playback"][4]
+
+
+# u = [a, b, [c,d]]
+
+# SoundDeviceManager.enable(a)
+# SoundDeviceManager.enable(u)
+
+# pprint([ device.id for device in SoundDeviceManager.devices["by_name"]["2460G4 (NVIDIA High Definition Audio)"]])
+# SoundDeviceManager.update_devices()
+
+# SoundDeviceManager.enable(SoundDeviceManager.devices["by_name"]["[p]  2460G4 (NVIDIA High Definition Audio)"])
+
+# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
+
+
+# SoundDeviceManager.enable(SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"])
+
+# SoundDeviceManager.update_devices()
+# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
+
+# SoundDeviceManager.disable(SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"])
+
+# SoundDeviceManager.update_devices()
+
+# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
+
+
+# SoundDeviceManager.enable(SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"])
+# SoundDeviceManager.update_devices()
+
+# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
+
+
+# 0 -> 2
+# 1 -> 1
+# 8 -> unplugged
 
