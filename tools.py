@@ -59,7 +59,9 @@ def quiet_run_process(args):
     subprocess.call(args, stdout=FNULL, stderr=FNULL, shell=False)
 
 def soundvolumeview(command : str, device : pycaw.AudioDevice, params : str = "" , soundvolumeview_path : str = "./bin/SoundVolumeView.exe"):
-    quiet_run_process(soundvolumeview_path + f" /{command} {device.id} {params}")
+    command = soundvolumeview_path + f" /{command} {device.id} {params}"
+    print(command)
+    quiet_run_process(command)
 
 def enable_device(device, soundvolumeview_path = "./bin/SoundVolumeView.exe"):
     soundvolumeview("enable", device, soundvolumeview_path= soundvolumeview_path)
@@ -77,8 +79,11 @@ def restart_device(device, soundvolumeview_path = "./bin/SoundVolumeView.exe"):
 def set_playback_through(enable : bool, record_device = None, playback_device = None, soundvolumeview_path = "./bin/SoundVolumeView.exe"):
     if enable is True :
         soundvolumeview("SetListenToThisDevice", record_device, "1", soundvolumeview_path )
+        # print("id")
+        # pprint(playback_device)
+        # pprint(record_device)
         soundvolumeview("SetPlaybackThroughDevice", record_device, playback_device.id, soundvolumeview_path)
-        input()
+        # input()
     else :
         soundvolumeview("SetListenToThisDevice", record_device, "0", soundvolumeview_path)
         
@@ -140,12 +145,28 @@ class SoundDeviceManager():
     
     @classmethod
     def set_playback_through(cls, enable, record_device, playback_device):
+        print("playback device")
+        pprint(playback_device)
+        print(type(playback_device))
+        print("record device")
+        pprint(record_device)
+        print(type(record_device))
         if type( record_device ) == list :
             for d in record_device :
                 cls.set_playback_through(enable, d, playback_device)
         else :
-            set_playback_through(enable, record_device, playback_device, cls.SoundVolumeView_path)
-            print(f"{record_device.id} | {record_device.FriendlyName} will playback through {playback_device.FriendlyName}")
+            if type(playback_device) == list :
+                if len(playback_device) == 1 :
+                    playback_work_device = playback_device[0]
+                else :
+                    raise Exception("you entered a list of playback devices with several playback devices, can't assign")
+            else :
+                playback_work_device = playback_device
+            # print("type ==============================")
+            # print(type(playback_work_device))
+            # print(type(record_device))
+            set_playback_through(enable, record_device, playback_work_device, cls.SoundVolumeView_path)
+            print(f"{record_device.id} | {record_device.FriendlyName} will playback through {playback_work_device.FriendlyName}")
     
     @classmethod
     def list_devices(cls, key):
@@ -215,3 +236,7 @@ class SoundDeviceManager():
 # 1 -> 1
 # 8 -> unplugged
 
+
+
+# SoundDeviceManager.set_playback_through(True, [device for device in SoundDeviceManager.devices["recording"] if "Line" in device.FriendlyName], SoundDeviceManager.devices["by_name"]["[p]  Speakers (Yeti Stereo Microphone)"] )
+# SoundDeviceManager.set_playback_through(True, [device for device in SoundDeviceManager.devices["recording"] if "Line" in device.FriendlyName], SoundDeviceManager.devices["by_name"]["[p]  Headphones (WiBUDS Pocket Stereo)"] )

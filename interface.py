@@ -296,10 +296,12 @@ def action():
         for device_name in answer['restart_device'] :
             SoundDeviceManager.restart( SoundDeviceManager.devices["by_name"][device_name] )
             
-    elif answer['app_choice'] == 'playback_through_select_devices':
+    elif answer['app_choice'] == 'playback through':
         for device_name in answer["playback_through_select_devices"] :
-            print(device_name)
-            SoundDeviceManager.set_playback_through(enable = True, record_device= SoundDeviceManager.devices["by_name"][device_name], playback_device= answer["playback_through_select_device_playback"])
+            recording_device = SoundDeviceManager.devices["by_name"][device_name]
+            playback_work_device = SoundDeviceManager.devices["by_name"][answer["playback_through_select_device_playback"]]
+            print(playback_work_device)
+            SoundDeviceManager.set_playback_through(enable = True, record_device= recording_device, playback_device= playback_work_device)
     elif answer['app_choice'] == 'quit' and answer["quit_confirm"] == True:
         clear()
         return False
