@@ -1,6 +1,6 @@
 import pycaw.pycaw as pycaw
 import prompt_toolkit
-    
+from logger import *
     
     
 def print_device(device : pycaw.AudioDevice, device_pointer_dict : dict):
@@ -17,8 +17,6 @@ def print_device(device : pycaw.AudioDevice, device_pointer_dict : dict):
             
 
 import platform
-import logging
-import json
 
 
 """
@@ -45,9 +43,12 @@ CLEAR FUNCTION
 import os
 
 
-from tools import SoundDeviceManager
+from SoundDeviceManager import SoundDeviceManager
 
 def clear():
+    """Clears the screen
+    """
+    program_log.debug("Clearing the Console...")
     running_system = platform.system()
     Posix_Systems = ["Linux",
                      "Darwin"   # MAC OS
@@ -61,143 +62,73 @@ def clear():
 
 
 """
-REQUETES
+PARAMETERS
 """
 
-import requests
 import json
-headers = {'accept': 'application/json'}
-API_URL = 'http://127.0.0.1:8000/'
 
 
 """
 STYLE
 """
 
-red_color = "#E91E63"
-blue_color = "#2196f3"
-orange_color = "#ff8700"
-cyan_color = "#00ffd7"
-gray_color = "#474747"
-
-style = prompt_toolkit.styles.Style([
-    ('separator',    red_color),
-    ('questionmark', red_color),
-    ('focus',        blue_color),
-    ('checked',      blue_color),
-    ('pointer',      orange_color),
-    ('instruction',  orange_color),
-    ('answer',       cyan_color),
-    ('question',     blue_color),
-    ("disabled", gray_color)
-])
-
+from style import *
 
 # ! compléter la liste de ce qu'on peut configurer
 
+from device_list import DeviceList
+
+program_log.debug("Instanciating DeviceList object...")
+device_list = DeviceList()
 
 def refresh_devices(case = None):
+    """Returns a list of devices, depending on the action we want to perform
+    
+        --> recording
+        --> playback
+    
+    Return :
+        --> list of devices names
+        --> with PyInquirer Separators
+    
+    """
+    
+    program_log.info(f"Refreshing devices list with case : {case}")
     
     SoundDeviceManager.update_devices()    
 
     if case == None :
         pass
+    
     elif case == "checkbox-recording" :
-        Recording_devices_checkboxes =  [   ]
-        for device in SoundDeviceManager.list_devices("recording") :
-            added = { 'name' : "[r]  " + device, 'checked' : False }
-            if added not in Recording_devices_checkboxes :
-                Recording_devices_checkboxes.append(added)
-        sep_recording = [Separator("Recording devices")]
-        return sep_recording + Recording_devices_checkboxes
+        return device_list.get_checkbox_list(device_type=["recording"], disable_device_checkbox_if= DeviceList.ALL)
+    
     elif case == "checkbox-playback" :
-        Playback_devices_checkboxes =  []
-        for device in SoundDeviceManager.list_devices("playback") :
-            added = { 'name' : "[p]  " + device, 'checked' : False }
-            if added not in Playback_devices_checkboxes :
-                Playback_devices_checkboxes.append(added)
-        sep_playback = [Separator("Playback Devices")]
-        return sep_playback + Playback_devices_checkboxes        
+        return device_list.get_checkbox_list(device_type=["playback"], disable_device_checkbox_if= DeviceList.ALL)
     
     elif case == "list-all"  :
-        sep_recording = [Separator("Recording devices")]
-        sep_playback = [Separator("Playback Devices")]
-        list_all_devices =  sep_playback + ["[p]  " + device for device in list(dict.fromkeys(SoundDeviceManager.list_devices("playback")))] + sep_recording + [ "[r]  " + device for device in list(dict.fromkeys(SoundDeviceManager.list_devices("recording")))]
-        return list_all_devices
+        return device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALL)
     
     elif case == "list-enabled-playback":
-        return list(dict.fromkeys(["[p]  " + device.FriendlyName for device in SoundDeviceManager.devices["playback"] if SoundDeviceManager.is_active(device)]))
+        return device_list.get_list(device_type=["playback"], condition= DeviceList.ALREADY_ACTIVE)
     
     elif case == "enable" :
-        Recording_devices_checkboxes =  [   ]
-        for device in SoundDeviceManager.devices["recording"] :
-            if SoundDeviceManager.is_active(device) :
-                added = { 'name' : "[r]  " + device.FriendlyName, 'checked' : False, 'disabled' : ' active ' }
-            else :
-                added = { 'name' : "[r]  " + device.FriendlyName, 'checked' : False }
-            if added not in Recording_devices_checkboxes :
-                Recording_devices_checkboxes.append(added)
-        
-        Playback_devices_checkboxes =  []
-        for device in SoundDeviceManager.devices["playback"] :
-            if SoundDeviceManager.is_active(device) :
-                added = { 'name' : "[p]  " + device.FriendlyName, 'checked' : False, 'disabled' : ' active ' }
-            else :
-                added = { 'name' : "[p]  " + device.FriendlyName, 'checked' : False }
-            if added not in Playback_devices_checkboxes :
-                Playback_devices_checkboxes.append(added)
-
-        sep_playback = [Separator("Playback Devices")]
-        sep_recording = [Separator("Recording devices")]
-        all_devices_checkboxes = sep_playback + Playback_devices_checkboxes + sep_recording + Recording_devices_checkboxes
-
-        return all_devices_checkboxes
+        return device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALREADY_ACTIVE)
     
     
     elif case == "disable" :
-        Recording_devices_checkboxes =  [   ]
-        for device in SoundDeviceManager.devices["recording"] :
-            if not SoundDeviceManager.is_active(device) :
-                added = { 'name' : "[r]  " + device.FriendlyName, 'checked' : False, 'disabled' : 'disabled' }
-            else :
-                added = { 'name' : "[r]  " + device.FriendlyName, 'checked' : False }
-            if added not in Recording_devices_checkboxes :
-                Recording_devices_checkboxes.append(added)
-        
-        Playback_devices_checkboxes =  []
-        for device in SoundDeviceManager.devices["playback"] :
-            if not SoundDeviceManager.is_active(device) :
-                added = { 'name' : "[p]  " + device.FriendlyName, 'checked' : False, 'disabled' : 'disabled' }
-            else :
-                added = { 'name' : "[p]  " + device.FriendlyName, 'checked' : False }
-            if added not in Playback_devices_checkboxes :
-                Playback_devices_checkboxes.append(added)
-
-        sep_playback = [Separator("Playback Devices")]
-        sep_recording = [Separator("Recording devices")]
-        all_devices_checkboxes = sep_playback + Playback_devices_checkboxes + sep_recording + Recording_devices_checkboxes
-        return all_devices_checkboxes
+        return device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALREADY_DISABLED)
 
     elif case == "disable-recording" :
-        Recording_devices_checkboxes =  [   ]
-        for device in SoundDeviceManager.devices["recording"] :
-            if not SoundDeviceManager.is_active(device) :
-                added = { 'name' : "[r]  " + device.FriendlyName, 'checked' : False, 'disabled' : 'disabled' }
-            else :
-                added = { 'name' : "[r]  " + device.FriendlyName, 'checked' : False }
-            if added not in Recording_devices_checkboxes :
-                Recording_devices_checkboxes.append(added)
-        
-        sep_recording = [Separator("Recording devices")]
-        all_devices_checkboxes = sep_recording + Recording_devices_checkboxes
-
-
-        return all_devices_checkboxes
+        return device_list.get_checkbox_list(device_type=["recording"], disable_device_checkbox_if= DeviceList.ALREADY_DISABLED)
 
 
 
 def menu():
     
+    program_log.debug("Getting user prompt...")
+    
+    program_log.debug("Creating the Questions...")
     questions = [
 
         {
@@ -263,6 +194,7 @@ def menu():
 
     ]
     
+    program_log.debug("Prompting user...")
     answers = prompt.prompt(questions, style=style)
     return answers
 
@@ -276,12 +208,14 @@ def render_title():
 
 
 def action():
-
+    program_log.debug("Running action...")
     clear()
     render_title()
 
     # affiche le menu et retourne les résultats
     answer = menu()
+
+    program_log.debug(f"user's app choice is : {answer['app_choice']}")
 
     if answer['app_choice'] == "enable" :
 
@@ -306,6 +240,7 @@ def action():
         clear()
         return False
 
+    program_log.info("No task to do, ending loop...")
     # si l'utilisateur ne veut pas
     return True
 
@@ -314,19 +249,11 @@ def run():
     """
     continue la boucle
     """
+    program_log.info("Running Menu...")
     running = True
+    program_log.debug(f"running variable is : {running}")
     while running:
+        
         running = action()
-        # ! replacer par un log
-
+    program_log.debug("End of Menu")
     return
-
-
-def main():
-    run()
-    return
-
-
-# Définie la main
-if __name__ == "__main__":
-    main()
