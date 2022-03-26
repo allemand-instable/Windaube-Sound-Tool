@@ -84,7 +84,7 @@ class SoundDeviceManager():
         program_log.debug(f"Listing devices with key {key}")
         available_keys = ["playback", "recording", "pointer"]
         if key not in available_keys :
-            raise Exception(f"la clé doit être une des suivantes : {elem for elem in available_keys}")
+            raise Exception(f"la clé doit être une des suivantes : {[elem for elem in available_keys]}")
         return [elem.FriendlyName for elem in cls.devices[key]]
 
     @staticmethod

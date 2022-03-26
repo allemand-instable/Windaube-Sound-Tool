@@ -1,8 +1,48 @@
-import pycaw.pycaw as pycaw
-import prompt_toolkit
+"""
+LOGGING
+"""
 from logger import *
-    
-    
+
+"""
+PROJECT CLASSES
+"""
+from SoundDeviceManager import SoundDeviceManager
+from device_list import DeviceList
+
+"""
+AUDIO
+"""
+import pycaw.pycaw as pycaw
+"""
+Couleur
+"""
+from colorama import Fore
+"""
+CLI Libraries
+"""
+import prompt_toolkit
+# prompt_toolkit . print_formatted_text, HTML
+from inquirer2 import prompt, Separator
+# cool title
+from pyfiglet import Figlet
+
+from pprint import pprint
+"""
+OS RELATED
+"""
+import os
+import platform
+"""
+PARAMETERS
+"""
+import json
+
+"""
+STYLE
+"""
+from style import *
+
+
 def print_device(device : pycaw.AudioDevice, device_pointer_dict : dict):
     
     PLAYBACK_THOURGH_DEVICE_PROPERTY_KEY = "{24DBB0FC-9311-4B3D-9CF0-18FF155639D4} 0"
@@ -16,34 +56,6 @@ def print_device(device : pycaw.AudioDevice, device_pointer_dict : dict):
             prompt_toolkit.print_formatted_text(html_str)
             
 
-import platform
-
-
-"""
-Couleur
-"""
-from colorama import Fore
-
-
-"""
-CLI Libraries
-"""
-import prompt_toolkit
-# prompt_toolkit . print_formatted_text, HTML
-from inquirer2 import prompt, Separator
-
-# cool title
-from pyfiglet import Figlet
-
-from pprint import pprint
-
-"""
-CLEAR FUNCTION
-"""
-import os
-
-
-from SoundDeviceManager import SoundDeviceManager
 
 def clear():
     """Clears the screen
@@ -61,22 +73,9 @@ def clear():
     return
 
 
-"""
-PARAMETERS
-"""
-
-import json
-
-
-"""
-STYLE
-"""
-
-from style import *
 
 # ! compléter la liste de ce qu'on peut configurer
 
-from device_list import DeviceList
 
 program_log.debug("Instanciating DeviceList object...")
 device_list = DeviceList()
@@ -180,9 +179,6 @@ def menu():
             'choices' : refresh_devices("list-enabled-playback"),
             'when' : lambda answer : answer['app_choice'] == 'playback through' and answer['playback_through_select_devices']
         },
-        
-        
-
         # QUIT confirm
         {
             'type': 'confirm',
@@ -215,6 +211,8 @@ def action():
     # affiche le menu et retourne les résultats
     answer = menu()
 
+    program_log.debug("Answers retrieved")
+    
     program_log.debug(f"user's app choice is : {answer['app_choice']}")
 
     if answer['app_choice'] == "enable" :
