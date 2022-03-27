@@ -43,6 +43,8 @@ STYLE
 from style import *
 
 
+
+
 def print_device(device : pycaw.AudioDevice, device_pointer_dict : dict):
     
     PLAYBACK_THOURGH_DEVICE_PROPERTY_KEY = "{24DBB0FC-9311-4B3D-9CF0-18FF155639D4} 0"
@@ -89,37 +91,52 @@ def refresh_devices(case = None):
     Return :
         --> list of devices names
         --> with PyInquirer Separators
-    
     """
     
     program_log.info(f"Refreshing devices list with case : {case}")
     
     SoundDeviceManager.update_devices()    
 
+    program_log.debug(f"All devices : \n{pformat(SoundDeviceManager.devices)}\n")
+
     if case == None :
         pass
     
     elif case == "checkbox-recording" :
-        return device_list.get_checkbox_list(device_type=["recording"], disable_device_checkbox_if= DeviceList.ALL)
+        dev_list = device_list.get_checkbox_list(device_type=["recording"], disable_device_checkbox_if= DeviceList.ALL)
+        program_log.debug(f"Checkbox recording devices list : case = {case}")
+        return dev_list
     
     elif case == "checkbox-playback" :
-        return device_list.get_checkbox_list(device_type=["playback"], disable_device_checkbox_if= DeviceList.ALL)
+        dev_list = device_list.get_checkbox_list(device_type=["playback"], disable_device_checkbox_if= DeviceList.ALL)
+        program_log.debug(f"Checkbox playback devices list : case = {case}")
+        return dev_list
     
     elif case == "list-all"  :
-        return device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALL)
+        dev_list = device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALL)
+        program_log.debug(f"List all devices list : case = {case}")
+        return dev_list
     
     elif case == "list-enabled-playback":
-        return device_list.get_list(device_type=["playback"], condition= DeviceList.ALREADY_ACTIVE)
+        dev_list = device_list.get_list(device_type=["playback"], condition= DeviceList.ALREADY_ACTIVE)
+        program_log.debug(f"List enabled playback devices list : case = {case}")
+        return dev_list
     
     elif case == "enable" :
-        return device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALREADY_ACTIVE)
+        dev_list = device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALREADY_ACTIVE)
+        program_log.debug(f"Enable devices list : case = {case}")
+        return dev_list
     
     
     elif case == "disable" :
-        return device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALREADY_DISABLED)
+        dev_list = device_list.get_checkbox_list(device_type=["playback", "recording"], disable_device_checkbox_if= DeviceList.ALREADY_DISABLED)
+        program_log.debug(f"Disable devices list : case = {case} ")
+        return dev_list
 
     elif case == "disable-recording" :
-        return device_list.get_checkbox_list(device_type=["recording"], disable_device_checkbox_if= DeviceList.ALREADY_DISABLED)
+        dev_list = device_list.get_checkbox_list(device_type=["recording"], disable_device_checkbox_if= DeviceList.ALREADY_DISABLED)
+        program_log.debug(f"Disable recording devices list : case = {case}")
+        return dev_list
 
 
 
@@ -192,6 +209,7 @@ def menu():
     
     program_log.debug("Prompting user...")
     answers = prompt.prompt(questions, style=style)
+
     return answers
 
 
@@ -237,8 +255,6 @@ def action():
     elif answer['app_choice'] == 'quit' and answer["quit_confirm"] == True:
         clear()
         return False
-
-    program_log.info("No task to do, ending loop...")
     # si l'utilisateur ne veut pas
     return True
 
@@ -253,5 +269,5 @@ def run():
     while running:
         
         running = action()
-    program_log.debug("End of Menu")
+    program_log.info("End of Menu")
     return

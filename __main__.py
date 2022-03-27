@@ -8,6 +8,8 @@ def main():
 
 # Définie la main
 if __name__ == "__main__":
+    # resetting the log
+    
     try:
         main()
     except Exception as e:

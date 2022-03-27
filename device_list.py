@@ -1,7 +1,6 @@
 from SoundDeviceManager import SoundDeviceManager
 from inquirer2 import Separator        
 from logger import *
-import pprint
 
 class DeviceList():
     
@@ -42,6 +41,10 @@ class DeviceList():
             
         return final_list
 
+
+
+
+
     @classmethod
     def get_checkbox_list(cls, device_type : list[str], disable_device_checkbox_if : int = ALL, include_separator : bool = True) -> list:
         """Returns list of devices with a separator for the desired category for checkbox operation
@@ -60,38 +63,54 @@ class DeviceList():
         final_list = []
         
             
+        
         for type in device_type :
-            program_log.debug(f"Type : {type}")
-            device_list = []
+            device_list : list = []
+            program_log.debug( f"device_list est une list : {isinstance(device_list, list)}")
+            program_log.debug(f"\n\n\nType : {type}")
             # recording -> [r]
             # playback -> [p]
             device_prefix = f"[{type[0]}]  "
-            program_log.debug(f"setting device prefix to : {device_prefix}")
-            program_log.debug("Creating the device list...")
+            program_log.debug(f"setting device prefix to : \"{device_prefix}\"")
+            program_log.debug("\n\nCreating the device list...")
+            
             for device in SoundDeviceManager.list_devices(type) : 
                 
                 # disables checkbox based on the condition
                 
                 device_name = device_prefix + device
-                program_log.debug(device_name)
+                program_log.debug(f"\n\ndevice_name : \"{device_name}\"")
                 device_obj = SoundDeviceManager.devices["by_name"][device_name]
                 
                 program_log.debug(f"getting device object from name, using SDM.devices[by_name][name] : {device_obj}")
+             
+                condition_check = cls.device_condition( device_obj , disable_device_checkbox_if, cls.USAGE_CHECKBOX)
+             
+                program_log.debug(f"condition_check : {condition_check}")
+             
+                if condition_check is None :
+                    program_log.debug("The device list's devices are not in the same state, skipping it...")
+                    pass
                 
-                if cls.device_condition( device_obj , disable_device_checkbox_if, cls.USAGE_CHECKBOX) :
-                    added = {   'name' : device_prefix  + device, 
-                                'checked' : False, 
-                                'disabled' : cls.disabled_text_list[disable_device_checkbox_if] 
-                            }
                 else :
-                    added = {   'name' : device_prefix  + device, 
-                                'checked' : False
-                            }
+                    if condition_check is True :
+                        added = {   'name' : device_prefix  + device, 
+                                    'checked' : False, 
+                                    'disabled' : cls.disabled_text_list[disable_device_checkbox_if] 
+                                }
+                    elif condition_check is False :
+                        added = {   'name' : device_prefix  + device, 
+                                    'checked' : False
+                                }
                 
-                program_log.debug("Checking if the device is already in the list...")
-                if added not in device_list :
-                    program_log.debug(f"{device} is not in the list, adding it...")
-                    device_list.append(added)
+                    program_log.debug(f"added : {added}")
+                
+                    program_log.debug("Checking if the device is already in the list...")
+                    if added not in device_list :
+                        program_log.debug(f"{device} is not in the list, adding it...")
+                        program_log.debug( f"device_list est une list : {isinstance(device_list, list)}")
+                        device_list.append(added)
+            
             
             # if you don't want the separator
             program_log.debug("Adding the separator...")
@@ -101,38 +120,63 @@ class DeviceList():
             else :
                 block = device_list
             
+            program_log.debug(f"block [final] : {pformat(block)}")
+            
             program_log.debug("Adding the block to the final list...")
-            final_list + block
+            final_list += block
+        
+        program_log.debug("Result list :")
+        program_log.debug(pformat(final_list))
         
         return final_list
 
 
-    @classmethod
-    def device_condition(cls, device_list : list, condition : int, usage : int = USAGE_NORMAL) -> bool:
-        program_log.info(f"Checking device list condition [DeviceList.device_condition]")
+
+    @staticmethod
+    def device_list_same_state(device_list):
+        program_log.debug("Checking if all devices inside the list are in the same state")
         if type(device_list) is list :
-            program_log.debug("device argument is a list")
+            program_log.debug(f"device argument is a list, of length {len(device_list)}")
             for device in device_list :
-                program_log.debug( f"device state value : {device.state.value}"  )
+                program_log.debug( f"device state value of {device.id} : {device.state.value}"  )
             program_log.debug(f"device list : {device_list}")
             program_log.debug(f"Checking if all state values of the device {device_list[0].FriendlyName} are the same...")
-            all_same_cond_list = [device_list[k].state.value == device_list[k+1].state.value  for k in range(len(device_list) - 1 )]
-
-            all_same_state = all( all_same_cond_list )
-
-            program_log.debug(all_same_cond_list)
-            program_log.debug(all_same_state)
             
-            value = all( cls.device_condition_single(device, condition, usage) for device in device_list )
+            if len(device_list) > 1 :
+                all_same_cond_list = [device_list[k].state.value == device_list[k+1].state.value  for k in range(len(device_list) - 1 )]
+                all_same_state = all( all_same_cond_list )
+                program_log.debug(f"condition list : {all_same_cond_list}")
+            else :
+                all_same_state = True
+
+            program_log.debug(f"AND operator on list : {all_same_state}")
         else :
-            program_log.debug("device argument is not a list")
+            program_log.debug(f"device argument's type is {type(device_list)}")
+            return True
+        return all_same_state
+
+
+    @classmethod
+    def device_condition(cls, device_list : list, condition : int, usage : int = USAGE_NORMAL) -> bool:
+        program_log.debug(f"Checking device list condition [DeviceList.device_condition]")
+        if not isinstance(device_list, list):
+            program_log.debug(f"device_list is not a list, passing it to device_condition_single directly...")
             value = cls.device_condition_single(device_list, condition, usage)
+        else :
+            # ifall devices are in the same state, check for condition
+            if DeviceList.device_list_same_state(device_list) :
+                program_log.debug("All devices in the list are in the same state, checking condition...")
+                value = cls.device_condition_single(device_list[0], condition, usage)
+            # if not all the devices are in the same state, we discard the list : None
+            else :
+                value = None
+        program_log.debug(f"Returning value : {value}")
         return value
     
     @classmethod
     def device_condition_single(cls, device, condition : int, usage : int = USAGE_NORMAL) -> bool:
         """Returns the condition checker for the disable checkbox"""
-        program_log.info(f"Checking device condition : {usage} [DeviceList.device_condition_single] for device {device.FriendlyName}")
+        program_log.debug(f"Checking device condition : {usage} [DeviceList.device_condition_single] for device {device.FriendlyName}")
         if condition == cls.ALL :
             # for normal usage we want to return True for all devices, to include them all
             if usage == cls.USAGE_NORMAL :

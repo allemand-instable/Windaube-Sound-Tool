@@ -56,14 +56,8 @@ class SoundDeviceManager():
     
     @classmethod
     def set_playback_through(cls, enable, record_device, playback_device):
-        print("playback device")
-        pprint(playback_device)
-        print(type(playback_device))
-        print("record device")
-        pprint(record_device)
-        print(type(record_device))
         
-        program_log.info(f"setting playback through for {record_device['name']} to {playback_device['name']}")
+        
         
         if type( record_device ) == list :
             for d in record_device :
@@ -77,6 +71,7 @@ class SoundDeviceManager():
             else :
                 playback_work_device = playback_device
             set_playback_through(enable, record_device, playback_work_device, cls.SoundVolumeView_path)
+            program_log.info(f"setting playback for {record_device.FriendlyName} through {playback_work_device.FriendlyName}")
             print(f"{record_device.id} | {record_device.FriendlyName} will playback through {playback_work_device.FriendlyName}")
     
     @classmethod
@@ -89,7 +84,7 @@ class SoundDeviceManager():
 
     @staticmethod
     def is_active(device):
-        program_log.info(f"checking if {device.FriendlyName} --- {device.id} --- is active")
+        program_log.debug(f"checking if {device.FriendlyName} --- {device.id} --- is active")
         # https://docs.microsoft.com/en-us/windows/win32/coreaudio/device-state-xxx-constants
         
         program_log.debug(f"device state : {device.state.value}")

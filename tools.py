@@ -2,7 +2,6 @@ from typing import Union
 import pycaw.pycaw as pycaw
 import operator
 import subprocess
-from pprint import pprint
 import os
 from logger import *
 
@@ -93,63 +92,6 @@ def restart_device(device, soundvolumeview_path = "./bin/SoundVolumeView.exe"):
 def set_playback_through(enable : bool, record_device = None, playback_device = None, soundvolumeview_path = "./bin/SoundVolumeView.exe"):
     if enable is True :
         soundvolumeview("SetListenToThisDevice", record_device, "1", soundvolumeview_path )
-        # print("id")
-        # pprint(playback_device)
-        # pprint(record_device)
         soundvolumeview("SetPlaybackThroughDevice", record_device, playback_device.id, soundvolumeview_path)
-        # input()
     else :
         soundvolumeview("SetListenToThisDevice", record_device, "0", soundvolumeview_path)
-        
-
-
-# D = get_devices()
-# pprint( SoundDeviceManager.list_devices("recording") )
-# pprint( SoundDeviceManager.list_devices("playback") )
-
-
-# a = SoundDeviceManager.devices["playback"][0]
-# b = SoundDeviceManager.devices["playback"][1]
-# c = SoundDeviceManager.devices["playback"][3]
-# d= SoundDeviceManager.devices["playback"][4]
-
-
-# u = [a, b, [c,d]]
-
-# SoundDeviceManager.enable(a)
-# SoundDeviceManager.enable(u)
-
-# pprint([ device.id for device in SoundDeviceManager.devices["by_name"]["2460G4 (NVIDIA High Definition Audio)"]])
-# SoundDeviceManager.update_devices()
-
-# SoundDeviceManager.enable(SoundDeviceManager.devices["by_name"]["[p]  2460G4 (NVIDIA High Definition Audio)"])
-
-# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
-
-
-# SoundDeviceManager.enable(SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"])
-
-# SoundDeviceManager.update_devices()
-# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
-
-# SoundDeviceManager.disable(SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"])
-
-# SoundDeviceManager.update_devices()
-
-# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
-
-
-# SoundDeviceManager.enable(SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"])
-# SoundDeviceManager.update_devices()
-
-# pprint([device.state.value for device in SoundDeviceManager.devices["by_name"]["[r]  Mic 4 (Virtual Audio Cable)"]])
-
-
-# 0 -> 2
-# 1 -> 1
-# 8 -> unplugged
-
-
-
-# SoundDeviceManager.set_playback_through(True, [device for device in SoundDeviceManager.devices["recording"] if "Line" in device.FriendlyName], SoundDeviceManager.devices["by_name"]["[p]  Speakers (Yeti Stereo Microphone)"] )
-# SoundDeviceManager.set_playback_through(True, [device for device in SoundDeviceManager.devices["recording"] if "Line" in device.FriendlyName], SoundDeviceManager.devices["by_name"]["[p]  Headphones (WiBUDS Pocket Stereo)"] )
