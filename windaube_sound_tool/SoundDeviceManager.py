@@ -1,5 +1,5 @@
-from tools import *
-from logger import *
+from windaube_sound_tool.tools import *
+from windaube_sound_tool.logger import *
 
 class SoundDeviceManager():
     

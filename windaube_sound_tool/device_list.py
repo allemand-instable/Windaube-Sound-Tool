@@ -1,6 +1,6 @@
-from SoundDeviceManager import SoundDeviceManager
+from windaube_sound_tool.SoundDeviceManager import SoundDeviceManager
 from inquirer2 import Separator        
-from logger import *
+from windaube_sound_tool.logger import *
 
 class DeviceList():
     

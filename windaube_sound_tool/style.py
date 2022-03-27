@@ -1,5 +1,5 @@
 import prompt_toolkit
-from logger import *
+from windaube_sound_tool.logger import *
 
 program_log.debug("Defining Style and Colors")
 

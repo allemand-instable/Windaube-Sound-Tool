@@ -1,13 +1,13 @@
 """
 LOGGING
 """
-from logger import *
+from windaube_sound_tool.logger import *
 
 """
 PROJECT CLASSES
 """
-from SoundDeviceManager import SoundDeviceManager
-from device_list import DeviceList
+from windaube_sound_tool.SoundDeviceManager import SoundDeviceManager
+from windaube_sound_tool.device_list import DeviceList
 
 """
 AUDIO
@@ -40,7 +40,7 @@ import json
 """
 STYLE
 """
-from style import *
+from windaube_sound_tool.style import *
 
 
 

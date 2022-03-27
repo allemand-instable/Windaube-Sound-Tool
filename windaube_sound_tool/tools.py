@@ -3,7 +3,7 @@ import pycaw.pycaw as pycaw
 import operator
 import subprocess
 import os
-from logger import *
+from windaube_sound_tool.logger import *
 
 def get_devices() :
     program_log.info("Getting devices")

@@ -1,6 +1,6 @@
-from interface import run
+from windaube_sound_tool.interface import run
 
-from logger import *
+from windaube_sound_tool.logger import *
 
 def main():
     program_log.info("Starting program")
