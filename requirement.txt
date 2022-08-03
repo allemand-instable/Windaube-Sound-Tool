@@ -1,4 +1,5 @@
-inquirer2-windows==1.0.0
-prompt-toolkit==3.0.18
-pycaw==20181226
-comtypes==1.1.10
+inquirer2-windows
+prompt-toolkit
+pycaw
+comtypes
+colorama

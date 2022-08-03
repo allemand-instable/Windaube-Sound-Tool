@@ -1,4 +1,4 @@
-import coloredlogs
+# import coloredlogs
 import logging
 
 import sys
