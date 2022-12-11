@@ -22,7 +22,13 @@ CLI Libraries
 """
 import prompt_toolkit
 # prompt_toolkit . print_formatted_text, HTML
-from inquirer2 import prompt, Separator
+import InquirerPy.prompts as ipp
+import InquirerPy.validator as ipv
+import InquirerPy.separator as ips
+import InquirerPy.utils as ipu
+from InquirerPy import inquirer
+from InquirerPy import get_style
+
 # cool title
 from pyfiglet import Figlet
 
@@ -32,10 +38,6 @@ OS RELATED
 """
 import os
 import platform
-"""
-PARAMETERS
-"""
-import json
 
 """
 STYLE
